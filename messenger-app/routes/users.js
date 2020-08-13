@@ -6,7 +6,7 @@ router.get('/', function (req, res, next) {
   res.json(users.getAll());
 });
 
-router.post('/user', function (req, res) {
+router.post('/', function (req, res) {
   const { name } = req.body;
   res.json(users.add(name));
 });

@@ -26,7 +26,7 @@ class UserRepository {
     const user = new User(name);
     this.users.push(user);
     return {
-      succes: true,
+      success: true,
       result: user
     }
   }

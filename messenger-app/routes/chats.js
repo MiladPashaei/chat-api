@@ -1,4 +1,4 @@
-const chats = require('../repo/chat');
+const chats = require('../repo/chats');
 const express = require('express');
 const router = express.Router();
 
