@@ -7,7 +7,7 @@ router.get('/recent/user/:userId', function (req, res, next) {
   res.json(chats.getRecentChats(userId));
 });
 
-router.get('/load/:id/user/:userId/message/messageId', function (req, res) {
+router.get('/load/:id/user/:userId/message/:messageId', function (req, res) {
   const { id, userId, messageId } = req.route;
   res.json(chats.loadChat(id, userId, messageId));
 });
