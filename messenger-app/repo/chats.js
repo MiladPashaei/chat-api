@@ -5,6 +5,7 @@ const { v4 } = require('uuid');
 
 class ChatMessage {
   constructor(content, date, type, userId) {
+    this.id = v4();
     this.content = content;
     this.date = date;
     this.type = type;
@@ -21,7 +22,7 @@ class Chat {
   }
 
   get lastMessage() {
-    return this.messages.length > 0 ? this.lastMessage[-1] : null;
+    return this.messages.length > 0 ? this.messages[-1] : null;
   }
 
   getPeerId(userId) {
@@ -61,13 +62,19 @@ class ChatRepository {
   }
 
   addChat(user1, user2) {
+    const alreadyExists = this.exists(user1, user2);
+    const newChat = new Chat(user1, user2);
+    if (!alreadyExists) {
+      this.chats.push(newChat);
+    }
     return {
       success: true,
-      result: this.exists(user1, user2) || new Chat(user1, user2)
+      result: alreadyExists ? alreadyExists : newChat
     };
   }
 
   getRecentChats(userId) {
+    console.log(userId);
     return {
       success: true,
       result: this.chats
@@ -75,7 +82,7 @@ class ChatRepository {
         .map(chat =>
           new RecentChatModel(
             chat.id,
-            chat.getName(),
+            chat.getName(userId),
             chat.lastMessage,
             userChatRepo.getLastReadMessageId(userId, chat.Id)
           )
@@ -85,7 +92,7 @@ class ChatRepository {
 
   loadChat(chatId, userId, lastLoadedMessageId) {
     const selectedChat = this.chats.find(x => x.id === chatId);
-    const { messages } = selectedChat|| { message: [] };
+    const { messages } = selectedChat || { message: [] };
     const index = messages.findIndex(x => x.id === lastLoadedMessageId);
 
     if (messages.length === 0 || (index === -1 && !!lastLoadedMessageId)) {
@@ -94,7 +101,7 @@ class ChatRepository {
         result: []
       }
     }
-
+    let i = index === -1 ? 0 : index;
     return {
       success: true,
       result: {
@@ -103,7 +110,8 @@ class ChatRepository {
           id: selectedChat.getPeerId(userId),
           name: selectedChat.getName(userId)
         },
-        messages: messages.slice(index, (index + PAGE_SIZE) < messages.length ? undefined : (index + PAGE_SIZE))
+        messages: [...messages].reverse().slice(i,
+          (i + PAGE_SIZE) > messages.length ? undefined : (i + PAGE_SIZE))
       }
     }
   }
