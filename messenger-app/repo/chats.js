@@ -1,6 +1,7 @@
 const PAGE_SIZE = 10;
 const userRepo = require('./users');
 const userChatRepo = require('./userChat');
+const userConnectionsRepo = require('./userConnections');
 const { v4 } = require('uuid');
 
 class ChatMessage {
@@ -55,6 +56,10 @@ class ChatRepository {
     this.chats = [];
   }
 
+  setSocket(io) {
+    this.io = io;
+  }
+
   exists(user1, user2) {
     return this.chats
       .filter(x => x.uniqueId.includes(user1))
@@ -74,7 +79,6 @@ class ChatRepository {
   }
 
   getRecentChats(userId) {
-    console.log(userId);
     return {
       success: true,
       result: this.chats
@@ -124,9 +128,20 @@ class ChatRepository {
         error: 'Chat not found.'
       }
     }
+    const data = chat.submitTextMessage(userId, message);
+
+    const pushMessage = peerId =>
+      userConnectionsRepo
+        .getUserConnections(chat.getPeerId(peerId))
+        .forEach(connectionId =>
+          this.io.to(connectionId).emit('new-message', { chatId, message: data }));
+
+    pushMessage(userId);
+    pushMessage(chat.getPeerId(userId));
+
     return {
       success: true,
-      result: chat.submitTextMessage(userId, message)
+      result: data
     };
   }
 }
