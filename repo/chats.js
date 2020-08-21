@@ -23,7 +23,7 @@ class Chat {
   }
 
   get lastMessage() {
-    return this.messages.length > 0 ? this.messages[-1] : null;
+    return this.messages.length > 0 ? this.messages[this.messages.length - 1] : null;
   }
 
   getPeerId(userId) {
@@ -116,6 +116,7 @@ class ChatRepository {
         },
         messages: [...messages].reverse().slice(i,
           (i + PAGE_SIZE) > messages.length ? undefined : (i + PAGE_SIZE))
+          .reverse()
       }
     }
   }
